@@ -1,4 +1,5 @@
-Dotfiles for pizero 2 W running adblock server
+Dotfiles for pizero 2 W running adblock server.
+Replaced chrony by busybox ntpd due to issues with drift file.
 
 steps to create and maintain this git repository:
 ```
