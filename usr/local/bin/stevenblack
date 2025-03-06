@@ -1,5 +1,4 @@
 #!/bin/sh
-#!/bin/sh
 
 # Remount root as read-write
 mount -o remount,rw /
