@@ -1,18 +1,18 @@
-Dotfiles for pizero 2 W running adblock server.
+# Dotfiles for pizero 2 W running adblock server.
 
-** Changes from default sys mode installation
+## Changes from default sys mode installation
 - Changed fstab to make / and /boot as readonly
 - Added lbu to keep track of files 
 - Replaced chrony by busybox ntpd due to issues with drift file.
 - Edited fstab to make /var/log as tmps filesystem so syslogs does not keep writing to sdcard
 
-** Todo
+## Todo
 - Save logs on a syslog server
 - Make picam work. currently this requires edge.
 - Add services like mqtt
 - Check if motion software can work reliably. Earlier this caused pi zero 2 W to hang frequently.
 
-** Information on the running system 
+## Information on the running system 
 ```
 prabu@pizero2w ~ [1]> rc-status -a 
 Runlevel: sysinit
