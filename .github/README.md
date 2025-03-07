@@ -12,6 +12,36 @@
 - Add services like mqtt
 - Check if motion software can work reliably. Earlier this caused pi zero 2 W to hang frequently.
 
+The following is not working.. to investigate further
+https://tpaste.us/xDQ1
+```
+Convert sys mode to diskless
+
+    Set media name to save apkvol in the /etc/lbu/lbu.conf file LBU_MEDIA=mmcblk0p1 (Replace mmcblk0p1 with the correct partition name.)
+    Configure /etc/fstab for Diskless Operation
+        Ensure the media partition (LBU_MEDIA) is listed with noauto.
+        Prevent it from being mounted read-write elsewhere.
+        Example: If the media was previously used for /boot. Update /etc/fstab:
+            UUID=E8C9-4979 /boot vfat noauto,rw,relatime,fmask=0022,dmask=0022,errors=remount-ro 0 2
+            UUID=E8C9-4979 /media/mmcblk0p1 vfat noauto,ro 0 0
+        Note: If /boot partition is FAT and was previously mounted automatically, no additional changes are needed for booting the diskless OS.
+    Mount Root (/) Filesystem as Read-Only. Update /etc/fstab:
+        UUID=8e293498-41d6-4d3a-9832-fb4d3334dcc9 / ext4 ro,relatime 0 1
+    Include Additional Files for Persistence outside of etc folder using lbu include command
+    Commit Changes & Create apkvol using the command $doas lbu commit
+    Reboot the pi into Diskless Mode .. $doas reboot
+
+update packages.. or upgrade to newer release or update kernel on a diskless system with underlying sys mode installation..
+
+    Remount / as Read-Write $doas mount -o remount,rw /
+    Remount /boot (If Kernel Update Required) $doas mount -o remount,rw /boot
+    Perform Updates finish my updating of apk/change/configure files, update kernel
+    Synchronize Disk Writes $doas sync
+    Remount as Read-Only $doas mount -o remount,ro / and $doas mount -o remount,ro /boot
+    Commit Changes to apkvol $lbu commit
+    Reboot $doas reboot
+```
+
 ## Information on the running system 
 ```
 prabu@pizero2w ~ [1]> rc-status -a 

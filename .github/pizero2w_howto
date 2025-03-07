@@ -1,0 +1,249 @@
+
+prabu@pizero1:~ $ libcamera-hello
+[0:00:27.866148945] [637]  INFO Camera camera_manager.cpp:327 libcamera v0.4.0+53-29156679
+[0:00:27.971039987] [642]  WARN RPiSdn sdn.cpp:40 Using legacy SDN tuning - please consider moving SDN inside rpi.denoise
+[0:00:27.977036185] [642]  INFO RPI vc4.cpp:447 Registered camera /base/soc/i2c0mux/i2c@1/ov5647@36 to Unicam device /dev/media0 and ISP device /dev/media1
+[0:00:27.977261602] [642]  INFO RPI pipeline_base.cpp:1121 Using configuration file '/usr/share/libcamera/pipeline/rpi/vc4/rpi_apps.yaml'
+Preview window unavailable
+Mode selection for 1296:972:12:P
+    SGBRG10_CSI2P,640x480/0 - Score: 3296
+    SGBRG10_CSI2P,1296x972/0 - Score: 1000
+    SGBRG10_CSI2P,1920x1080/0 - Score: 1349.67
+    SGBRG10_CSI2P,2592x1944/0 - Score: 1567
+Stream configuration adjusted
+[0:00:27.983099466] [637]  INFO Camera camera.cpp:1202 configuring streams: (0) 1296x972-YUV420 (1) 1296x972-SGBRG10_CSI2P
+[0:00:27.983786862] [642]  INFO RPI vc4.cpp:622 Sensor: /base/soc/i2c0mux/i2c@1/ov5647@36 - Selected sensor format: 1296x972-SGBRG10_1X10 - Selected unicam format: 1296x972-pGAA
+
+prabu@homepc2 /m/ext_part1 [127]> cat config.txt
+# do not modify this file as it will be overwritten on upgrade.
+# create and/or modify usercfg.txt instead.
+# https://www.raspberrypi.com/documentation/computers/config_txt.html
+#
+
+kernel=vmlinuz-rpi
+initramfs initramfs-rpi
+arm_64bit=1
+include usercfg.txt
+prabu@pizero2w ~> libcamera-hello --list-cameras
+Could not open any dmaHeap device
+No cameras available!
+prabu@pizero2w ~> ls -l /dev/dma_heap*
+total 0
+crw-------    1 root     root      253,   1 Jan  1  1970 linux,cma
+crw-------    1 root     root      253,   0 Jan  1  1970 system
+prabu@pizero2w ~> libcamera-hello --list-cameras
+Could not open any dmaHeap device
+No cameras available!
+prabu@pizero2w ~> dmesg | grep -iE "camera|unicam|dma"
+[    0.000000] OF: reserved mem: initialized node linux,cma, compatible id shared-dma-pool
+[    0.000000]   DMA      [mem 0x0000000000000000-0x000000001bffffff]
+[    0.000000]   DMA32    empty
+[    0.000000] On node 0, zone DMA: 16384 pages in unavailable ranges
+[    0.000000] Policy zone: DMA
+[    0.086370] DMA: preallocated 1024 KiB GFP_KERNEL pool for atomic allocations
+[    0.086666] DMA: preallocated 1024 KiB GFP_KERNEL|GFP_DMA pool for atomic allocations
+[    0.087083] DMA: preallocated 1024 KiB GFP_KERNEL|GFP_DMA32 pool for atomic allocations
+[    0.118222] bcm2835-dma 3f007000.dma-controller: DMA legacy API manager, dmachans=0x1
+[    0.119238] iommu: DMA domain TLB invalidation policy: strict mode
+[    2.342905] Using Buffer DMA mode
+[    2.344916] WARN::dwc_otg_hcd_init:1072: FIQ DMA bounce buffers: virt = ffffffc080b0c000 dma = 0x00000000cbc00000 len=9024
+[    2.422699] mmc-bcm2835 3f300000.mmcnr: DMA channel allocated
+[    2.522175] sdhost-bcm2835 3f202000.mmc: loaded - DMA enabled (>1)
+prabu@pizero2w ~> v4l2-ctl --list-devices
+unicam (platform:3f801000.csi):
+	/dev/video0
+	/dev/media0
+
+bcm2835-codec-decode (platform:bcm2835-codec):
+	/dev/video10
+	/dev/video11
+	/dev/video12
+	/dev/video18
+	/dev/video31
+
+bcm2835-isp (platform:bcm2835-isp):
+	/dev/video13
+	/dev/video14
+	/dev/video15
+	/dev/video16
+	/dev/video20
+	/dev/video21
+	/dev/video22
+	/dev/video23
+	/dev/media1
+	/dev/media2
+
+bcm2835-codec (vchiq:bcm2835-codec):
+	/dev/media3
+
+prabu@pizero2w ~> lsmod | grep ov5647
+
+ov5647                 20480  0
+v4l2_fwnode            20480  3 bcm2835_unicam_legacy,ov5647
+v4l2_async             20480  3 v4l2_fwnode,bcm2835_unicam_legacy,ov5647
+videodev              299008  9 v4l2_async,bcm2835_codec,v4l2_fwnode,bcm2835_unicam_legacy,ov5647,videobuf2_v4l2,bcm2835_v4l2,v4l2_mem2mem,bcm2835_isp
+mc                     61440  9 v4l2_async,videodev,bcm2835_codec,bcm2835_unicam_legacy,ov5647,videobuf2_v4l2,videobuf2_common,v4l2_mem2mem,bcm2835_isp
+prabu@pizero2w ~> doas chmod 666 /dev/dma_heap/*
+doas (prabu@pizero2w) password:
+prabu@pizero2w ~> libcamera-hello --list-cameras
+Available cameras
+-----------------
+0 : ov5647 [2592x1944 10-bit GBRG] (/base/soc/i2c0mux/i2c@1/ov5647@36)
+    Modes: 'SGBRG10_CSI2P' : 640x480 [58.92 fps - (16, 0)/2560x1920 crop]
+                             1296x972 [46.34 fps - (0, 0)/2592x1944 crop]
+                             1920x1080 [32.81 fps - (348, 434)/1928x1080 crop]
+                             2592x1944 [15.63 fps - (0, 0)/2592x1944 crop]
+
+For permanent fix: did not work
+echo 'KERNEL=="dma_heap*", MODE="0666"' | doas tee /etc/udev/rules.d/99-dma-heap.rules
+doas udevadm control --reload-rules && doas udevadm trigger
+
+For now have to issue the below command
+doas chmod 666 /dev/dma_heap/*
+
+
+OK: 32452 distinct packages available
+pizero2w:~$ doas apk add rpicam-apps
+ERROR: unable to select packages:
+  rpicam-apps-1.5.3-r0:
+    masked in: @testing
+    satisfies: world[rpicam-apps]
+  so:libcamera-base.so.0.4 (no such package):
+    required by: rpicam-apps-1.5.3-r0[so:libcamera-base.so.0.4]
+  so:libcamera.so.0.4 (no such package):
+    required by: rpicam-apps-1.5.3-r0[so:libcamera.so.0.4]
+pizero2w:~$ doas apk add rpicam-apps@testing
+ERROR: unable to select packages:
+  so:libcamera-base.so.0.4 (no such package):
+    required by: rpicam-apps-1.5.3-r0[so:libcamera-base.so.0.4]
+  so:libcamera.so.0.4 (no such package):
+    required by: rpicam-apps-1.5.3-r0[so:libcamera.so.0.4]
+pizero2w:~$ doas vi /etc/apk/repositories
+
+rpicam-apps@testing
+
+prabu@pizero2w ~> doas setup-devd
+What program should manage /dev? [mdev|mdevd|udev] [mdev] udev
+Scan the hardware to populate /dev? [y|n] (Say yes if you're running this script for the first time.) [n] y
+ * Caching service dependencies ...                                                                                                [ ok ]
+ * Starting udev ...                                                                                                               [ ok ]
+ * Generating a rule to create a /dev/root symlink ...                                                                             [ ok ]
+ * Populating /dev with existing devices through uevents ...                                                                       [ ok ]
+ * Waiting for uevents to be processed ...
+
+prabu@pizero2w ~> cat /boot/usercfg.txt
+# Automatically load overlays for detected cameras
+camera_auto_detect=1
+doas chmod 666 /dev/dma_heap/*
+doas (prabu@pizero2w) password:
+prabu@pizero2w ~> libcamera-hello --list-cameras
+Available cameras
+-----------------
+0 : ov5647 [2592x1944 10-bit GBRG] (/base/soc/i2c0mux/i2c@1/ov5647@36)
+    Modes: 'SGBRG10_CSI2P' : 640x480 [58.92 fps - (16, 0)/2560x1920 crop]
+                             1296x972 [46.34 fps - (0, 0)/2592x1944 crop]
+                             1920x1080 [32.81 fps - (348, 434)/1928x1080 crop]
+                             2592x1944 [15.63 fps - (0, 0)/2592x1944 crop]
+
+For permanent fix: did not work
+echo 'KERNEL=="dma_heap*", MODE="0666"' | doas tee /etc/udev/rules.d/99-dma-heap.rules
+doas udevadm control --reload-rules && doas udevadm trigger
+
+For now have to issue the below command
+doas chmod 666 /dev/dma_heap/*
+
+
+OK: 32452 distinct packages available
+pizero2w:~$ doas apk add rpicam-apps
+ERROR: unable to select packages:
+  rpicam-apps-1.5.3-r0:
+    masked in: @testing
+    satisfies: world[rpicam-apps]
+  so:libcamera-base.so.0.4 (no such package):
+    required by: rpicam-apps-1.5.3-r0[so:libcamera-base.so.0.4]
+  so:libcamera.so.0.4 (no such package):
+    required by: rpicam-apps-1.5.3-r0[so:libcamera.so.0.4]
+pizero2w:~$ doas apk add rpicam-apps@testing
+ERROR: unable to select packages:
+
+libcamera-hello --list-cameras
+Available cameras
+-----------------
+0 : ov5647 [2592x1944 10-bit GBRG] (/base/soc/i2c0mux/i2c@1/ov5647@36)
+    Modes: 'SGBRG10_CSI2P' : 640x480 [58.92 fps - (16, 0)/2560x1920 crop]
+                             1296x972 [46.34 fps - (0, 0)/2592x1944 crop]
+                             1920x1080 [32.81 fps - (348, 434)/1928x1080 crop]
+                             2592x1944 [15.63 fps - (0, 0)/2592x1944 crop]
+
+For permanent fix: did not work
+echo 'KERNEL=="dma_heap*", MODE="0666"' | doas tee /etc/udev/rules.d/99-dma-heap.rules
+doas udevadm control --reload-rules && doas udevadm trigger
+
+For now have to issue the below command
+doas chmod 666 /dev/dma_heap/*
+
+
+OK: 32452 distinct packages available
+pizero2w:~$ doas apk add rpicam-apps
+ERROR: unable to select packages:
+  rpicam-apps-1.5.3-r0:
+    masked in: @testing
+    satisfies: world[rpicam-apps]
+  so:libcamera-base.so.0.4 (no such package):
+    required by: rpicam-apps-1.5.3-r0[so:libcamera-base.so.0.4]
+  so:libcamera.so.0.4 (no such package):
+    required by: rpicam-apps-1.5.3-r0[so:libcamera.so.0.4]
+pizero2w:~$ doas apk add rpicam-apps@testing
+ERROR: unable to select packages:
+  so:libcamera-base.so.0.4 (no such package):
+    required by: rpicam-apps-1.5.3-r0[so:libcamera-base.so.0.4]
+  so:libcamera.so.0.4 (no such package):
+    required by: rpicam-apps-1.5.3-r0[so:libcamera.so.0.4]
+pizero2w:~$ doas vi /etc/apk/repositories
+
+rpicam-apps@testing
+
+prabu@pizero2w ~> doas setup-devd
+What program should manage /dev? [mdev|mdevd|udev] [mdev] udev
+Scan the hardware to populate /dev? [y|n] (Say yes if you're running this script for the first time.) [n] y
+ * Caching service dependencies ...                                                                                                [ ok ]
+ * Starting udev ...                                                                                                               [ ok ]
+ * Generating a rule to create a /dev/root symlink ...                                                                             [ ok ]
+ * Populating /dev with existing devices through uevents ...                                                                       [ ok ]
+ * Waiting for uevents to be processed ...
+
+prabu@pizero2w ~> cat /boot/usercfg.txt
+# Automatically load overlays for detected cameras
+camera_auto_detect=1
+doas chmod 666 /dev/dma_heap/*
+doas (prabu@pizero2w) password:
+prabu@pizero2w ~> libcamera-hello --list-cameras
+Available cameras
+-----------------
+0 : ov5647 [2592x1944 10-bit GBRG] (/base/soc/i2c0mux/i2c@1/ov5647@36)
+    Modes: 'SGBRG10_CSI2P' : 640x480 [58.92 fps - (16, 0)/2560x1920 crop]
+                             1296x972 [46.34 fps - (0, 0)/2592x1944 crop]
+                             1920x1080 [32.81 fps - (348, 434)/1928x1080 crop]
+                             2592x1944 [15.63 fps - (0, 0)/2592x1944 crop]
+
+For permanent fix: did not work
+echo 'KERNEL=="dma_heap*", MODE="0666"' | doas tee /etc/udev/rules.d/99-dma-heap.rules
+doas udevadm control --reload-rules && doas udevadm trigger
+
+For now have to issue the below command
+doas chmod 666 /dev/dma_heap/*
+
+OK: 32452 distinct packages available
+pizero2w:~$ doas apk add rpicam-apps
+ERROR: unable to select packages:
+  rpicam-apps-1.5.3-r0:
+    masked in: @testing
+    satisfies: world[rpicam-apps]
+  so:libcamera-base.so.0.4 (no such package):
+    required by: rpicam-apps-1.5.3-r0[so:libcamera-base.so.0.4]
+  so:libcamera.so.0.4 (no such package):
+    required by: rpicam-apps-1.5.3-r0[so:libcamera.so.0.4]
+pizero2w:~$ doas apk add rpicam-apps@testing
+ERROR: unable to select packages:
+
+https://gitlab.alpinelinux.org/alpine/aports/-/issues/16911
