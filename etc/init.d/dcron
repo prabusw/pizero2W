@@ -1,0 +1,14 @@
+#!/sbin/openrc-run
+
+name="$SVCNAME"
+command="/usr/sbin/crond"
+# pidfile="/var/run/$SVCNAME.pid"
+pidfile="/run/$SVCNAME.pid"
+cronstamps="/var/log"
+command_args="$DCRON_OPTS -p $pidfile -t $cronstamps"
+description="Dillon's lightweight cron daemon"
+
+depend() {
+	use logger clock hostname
+	provide cron
+}

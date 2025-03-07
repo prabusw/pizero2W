@@ -3,9 +3,10 @@
 ## Changes from default sys mode installation
 - Changed fstab to make / and /boot as readonly
 - Added lbu to keep track of files 
-- Replaced chrony by busybox ntpd due to issues with drift file.
+- Started using chrony as issues related to drift file has been rectified using dcron based restart
+- Replaced busybox crond by dcron for above chrony related issue. Modified /etc/init.d/dcron file
 - Edited fstab to make /var/log as tmps filesystem so syslogs does not keep writing to sdcard
-
+-
 ## Todo
 - Save logs on a syslog server
 - Make picam work. currently this requires edge.
@@ -111,6 +112,7 @@ prabu@pizero2w ~> doas crontab -l
 0	3	*	*	6	run-parts /etc/periodic/weekly
 0	5	1	*	*	run-parts /etc/periodic/monthly
 0 	2 	* 	* 	0	/usr/local/bin/stevenblack
+@reboot sleep 180 && /sbin/rc-service chronyd restart
 #0	1	2	*	*	/usr/bin/curl https://www.internic.net/domain/named.cache -o /etc/unbound/root.hints
 
 prabu@pizero2w ~> free -m
