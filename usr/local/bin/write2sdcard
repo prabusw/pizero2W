@@ -1,0 +1,6 @@
+#!/bin/sh
+mount -o remount,rw /dev/mmcblk0p2 /
+rsync -aAXv --delete /media/overlay/upper/ /
+sync
+mount -o remount,ro /dev/mmcblk0p2 /
+echo "Changes committed to disk"
