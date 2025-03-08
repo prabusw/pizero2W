@@ -10,6 +10,9 @@ fi
 echo "Remounting /media/root-ro as read-write..."
 mount -o remount,rw /media/root-ro || { echo "Failed to remount /media/root-ro" >&2; exit 1; }
 
+echo "Saving current time..."
+date +%s > /media/root-ro/var/lib/time-lastboot
+
 # Sync overlay changes to the real root filesystem
 echo "Copying changes from overlay to /media/root-ro..."
 rsync -aAXv --delete --exclude="/boot" --exclude="/dev" \
