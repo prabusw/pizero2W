@@ -1,9 +1,20 @@
 #!/bin/sh
 
 CMDLINE_FILE="/boot/cmdline.txt"
-OVERLAY_FILE="/boot/cmdline.overlayfs"
-ROOT_FILE="/boot/cmdline.root"
+CMDLINE_OVERLAY="/boot/cmdline.overlayfs"
+CMDLINE_ROOT="/boot/cmdline.root"
 BACKUP_FILE="/boot/cmdline.bak"
+
+# Function to prompt and handle reboot
+prompt_reboot() {
+    echo "contents of $CMDLINE_FILE"
+    cat $CMDLINE_FILE
+    read -p "Reboot required. Reboot now? [y/N] " REBOOT
+    case "$REBOOT" in
+        [yY]*) reboot ;;
+        *) echo "Reboot manually when ready." ;;
+    esac
+}
 
 # Ensure script is run as root
 if [ "$(id -u)" -ne 0 ]; then
@@ -14,51 +25,35 @@ fi
 # Check current mode based on /proc/cmdline (actual boot params)
 if grep -q "overlaytmpfs=yes" /proc/cmdline; then
     CURRENT_MODE="overlay"
+    TARGET_MODE="default"
+    TARGET_CMDLINE="$CMDLINE_ROOT"  # Switch to default mode
 else
     CURRENT_MODE="default"
+    TARGET_MODE="overlay"
+    TARGET_CMDLINE="$CMDLINE_OVERLAY"  # Switch to overlay mode
 fi
 
-# Determine new mode
-if [ "$CURRENT_MODE" = "overlay" ]; then
-    NEW_MODE="default"
-    NEW_FILE="$ROOT_FILE"
-else
-    NEW_MODE="overlay"
-    NEW_FILE="$OVERLAY_FILE"
-fi
-
-# Display current settings
-echo "Detected boot parameters: $(cat /proc/cmdline)"
-echo "Current root filesystem mode: $CURRENT_MODE"
-echo -n "Switch to $NEW_MODE mode? (y/N): "
-read -r CONFIRM
-
-if [ "$CONFIRM" != "y" ] && [ "$CONFIRM" != "Y" ]; then
-    echo "Operation canceled."
+# Compare /boot/cmdline.txt with the target file
+if cmp -s "$CMDLINE_FILE" "$TARGET_CMDLINE"; then
+    echo "Already in the desired mode ($TARGET_MODE). No changes needed."
+    prompt_reboot
     exit 0
 fi
 
-# Remount /boot as read-write
-echo "Remounting /boot as read-write..."
-mount -o remount,rw /boot || { echo "Failed to remount /boot" >&2; exit 1; }
 
-# Backup cmdline.txt before modifying
-cp "$CMDLINE_FILE" "$BACKUP_FILE"
+# Prompt before modifying the boot configuration
+echo "Switching root filesystem mode..."
+read -p "Change to $(basename "$TARGET_CMDLINE") mode? [y/N] " CONFIRM
+case "$CONFIRM" in
+    [yY]*)
+        cp "$TARGET_CMDLINE" "$CMDLINE_FILE"
+        sync  # Ensure changes are written to disk
+        echo "Mode switched. A reboot is required."
+        prompt_reboot
+        ;;
+    *)
+        echo "Operation cancelled."
+        exit 1
+        ;;
+esac
 
-# Apply new cmdline.txt
-cp "$NEW_FILE" "$CMDLINE_FILE"
-sync
-
-# Remount /boot as read-only
-echo "Remounting /boot as read-only..."
-mount -o remount,ro /boot
-
-echo "Root filesystem mode switched to: $NEW_MODE"
-echo -n "Reboot now? (y/N): "
-read -r REBOOT_CONFIRM
-if [ "$REBOOT_CONFIRM" = "y" ] || [ "$REBOOT_CONFIRM" = "Y" ]; then
-    echo "Rebooting..."
-    reboot
-else
-    echo "Please reboot for changes to take effect."
-fi
