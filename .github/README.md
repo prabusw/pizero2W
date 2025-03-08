@@ -1,12 +1,18 @@
-# Dotfiles for pizero 2 W running adblock server.
+# Dotfiles for running adblock server on a pizero 2 W 
+
+- Alpine Linux
+- unbound DNS server
+- Added dcron(optional)
 
 ## Changes from default sys mode installation
-- Changed fstab to make / and /boot as readonly
-- Added lbu to keep track of files 
-- Started using chrony as issues related to drift file has been rectified using dcron based restart
-- Replaced busybox crond by dcron for above chrony related issue. Modified /etc/init.d/dcron file
-- Edited fstab to make /var/log as tmps filesystem so syslogs does not keep writing to sdcard
--
+- adding overlaytmpfs=yes to /boot/cmdline.txt is the straightforward solution for sys mode alpine install
+- added a script to write to sdcard /usr/local/bin/write2sdcard
+- Uing chrony with default config
+- Retaining dcron with default config
+- Removed all almost all changes to fstab as using overlay root filesystem now. only boot is ro by default now
+- keeping lbu, but not really used as of now
+
+   
 ## Todo
 - Save logs on a syslog server
 - Make picam work. currently this requires edge.
