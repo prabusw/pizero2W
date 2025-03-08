@@ -1,6 +1,29 @@
 #!/bin/sh
-mount -o remount,rw /dev/mmcblk0p2 /
-rsync -aAXv --delete /media/overlay/upper/ /
+
+# Ensure script is run as root
+if [ "$(id -u)" -ne 0 ]; then
+    echo "This script must be run as root." >&2
+    exit 1
+fi
+
+# Remount root partition as read-write
+echo "Remounting /media/root-ro as read-write..."
+mount -o remount,rw /media/root-ro || { echo "Failed to remount /media/root-ro" >&2; exit 1; }
+
+# Sync overlay changes to the real root filesystem
+echo "Copying changes from overlay to /media/root-ro..."
+rsync -aAXv --delete --exclude="/boot" --exclude="/dev" \
+    --exclude="/proc" --exclude="/sys" --exclude="/run" \
+    --exclude="/tmp" --exclude="/var/tmp" --exclude="/media/root-ro" \
+    / /media/root-ro/
+
+# Sync filesystem changes to disk
+echo "Syncing filesystem changes..."
 sync
-mount -o remount,ro /dev/mmcblk0p2 /
-echo "Changes committed to disk"
+
+# Remount root partition as read-only
+echo "Remounting /media/root-ro as read-only..."
+mount -o remount,ro /media/root-ro || { echo "Warning: Failed to remount /media/root-ro as read-only" >&2; }
+
+echo "Changes committed successfully!"
+

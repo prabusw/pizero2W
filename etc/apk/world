@@ -13,6 +13,7 @@ gpg
 gpg-agent
 grep
 iw
+less
 linux-firmware-brcm
 linux-firmware-other
 linux-rpi
@@ -20,5 +21,6 @@ openresolv
 openssh
 openssl
 raspberrypi-bootloader
+rsync
 unbound
 wpa_supplicant
