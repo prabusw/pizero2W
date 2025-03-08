@@ -1,0 +1,11 @@
+#!/bin/sh
+echo "Remounting /media/root-ro as read-write..."
+mount -o remount,rw /media/root-ro || { echo "Failed to remount /media/root-ro" >&2; exit 1; }
+
+echo "Saving current time..."
+date +%s > /media/root-ro/var/lib/time-lastboot
+
+sync  # Ensure data is written to disk before remounting
+
+echo "Remounting /media/root-ro as read-only..."
+mount -o remount,ro /media/root-ro
