@@ -43,11 +43,20 @@ fi
 
 # Prompt before modifying the boot configuration
 echo "Switching root filesystem mode..."
-read -p "Change to $(basename "$TARGET_CMDLINE") mode? [y/N] " CONFIRM
+echo "current contents of $CMDLINE_FILE"
+cat $CMDLINE_FILE
+# read -p "Change to $(basename "$TARGET_CMDLINE") mode? [y/N] " CONFIRM
+read -p "Change to "$TARGET_MODE" mode? [y/N] " CONFIRM
 case "$CONFIRM" in
     [yY]*)
+	# Remount /boot as read-write
+	echo "Remounting /boot as read-write..."
+	mount -o remount,rw /boot || { echo "Failed to remount /boot" >&2; exit 1; }
         cp "$TARGET_CMDLINE" "$CMDLINE_FILE"
         sync  # Ensure changes are written to disk
+	# Remount /boot as read-only
+	echo "Remounting /boot as read-only..."
+	mount -o remount,ro /boot
         echo "Mode switched. A reboot is required."
         prompt_reboot
         ;;
