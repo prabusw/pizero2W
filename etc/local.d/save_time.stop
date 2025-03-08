@@ -1,11 +1,25 @@
 #!/bin/sh
-echo "Remounting /media/root-ro as read-write..."
-mount -o remount,rw /media/root-ro || { echo "Failed to remount /media/root-ro" >&2; exit 1; }
 
-echo "Saving current time..."
-date +%s > /media/root-ro/var/lib/time-lastboot
+# Check current mode based on /proc/cmdline (actual boot params)
+if grep -q "overlaytmpfs=yes" /proc/cmdline; then
+    CURRENT_MODE="overlay"
+else
+    CURRENT_MODE="default"
+fi
 
-sync  # Ensure data is written to disk before remounting
+if [ "$CURRENT_MODE" = "overlay" ]; then
+    echo "Remounting /media/root-ro as read-write..."
+    mount -o remount,rw /media/root-ro || { echo "Failed to remount /media/root-ro" >&2; exit 1; }
 
-echo "Remounting /media/root-ro as read-only..."
-mount -o remount,ro /media/root-ro
+    echo "Saving current time..."
+    date +%s > /media/root-ro/var/lib/time-lastboot
+
+    sync  # Ensure data is written to disk before remounting
+
+    echo "Remounting /media/root-ro as read-only..."
+    mount -o remount,ro /media/root-ro
+else
+    echo "Not in overlay mode..nothing to be done"
+fi
+
+
