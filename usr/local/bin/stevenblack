@@ -1,0 +1,16 @@
+#!/bin/sh
+
+# Remount root as read-write
+# mount -o remount,rw /
+
+echo "server:" >/etc/unbound/blacklist.conf
+curl -s https://raw.githubusercontent.com/StevenBlack/hosts/master/hosts | \
+    grep ^0.0.0.0 - | \
+    sed 's/ #.*$//; s/^0.0.0.0 \(.*\)/local-zone: "\1" refuse/' \
+    >>/etc/unbound/blacklist.conf
+
+# Remount root as read-only
+# mount -o remount,ro /
+
+# Reload Unbound to apply changes
+service unbound reload

@@ -1,0 +1,12 @@
+alpine-base
+busybox-mdev-openrc
+chrony
+curl
+doas
+fish
+git
+iw
+openssh
+openssl
+unbound
+wpa_supplicant
