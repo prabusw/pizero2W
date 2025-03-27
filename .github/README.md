@@ -189,6 +189,9 @@ Swap:             0           0           0
 ```
 
 ## steps to create and maintain this git repository:
+
+Transferred both public and private key safely to the .ssh folder
+
 ```
 $ git init --bare $HOME/.systemfiles
 $ echo "alias sysconfig='git --git-dir=/home/prabu/.systemfiles --work-tree=/'" >> ~/.config/fish/config.fish
