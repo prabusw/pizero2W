@@ -2,21 +2,89 @@
 
 ## Diskless setup
 
-- Alpine Linux diskless mode
+- Alpine Linux in Diskless mode
 - unbound DNS server
 
 ### Changes from default diskless mode installation
 - since rpi-imager by default creates only a 100MB partition for /boot, decided to use tar file to create bootable sdcard with.
 - modified config.txt to increase available memory gpu_mem=32
-- Using lbu
-
+- using lbu to save and manage Alpine Linux diskless configuration
+- Save logs on a syslog server                                                                                                           
+- starting unbound using cron
 
 ### Todo
-- Save logs on a syslog server
 - Add services like mqtt
 
 ### Information on the running system
 ```
+prabu@pizero2w ~> doas rc-status -a
+Runlevel: nonetwork
+Runlevel: default
+ crond                                                                                                                      [  started  ]
+ chronyd                                                                                                                    [  started  ]
+ sshd                                                                                                                       [  started  ]
+Runlevel: sysinit
+ devfs                                                                                                                      [  started  ]
+ dmesg                                                                                                                      [  started  ]
+ modloop                                                                                                                    [  started  ]
+ mdev                                                                                                                       [  started  ]
+ hwdrivers                                                                                                                  [  started  ]
+Runlevel: boot
+ swclock                                                                                                                    [  started  ]
+ modules                                                                                                                    [  started  ]
+ sysctl                                                                                                                     [  started  ]
+ hostname                                                                                                                   [  started  ]
+ bootmisc                                                                                                                   [  started  ]
+ syslog                                                                                                                     [  started  ]
+ wpa_supplicant                                                                                      [  started 168 day(s) 22:59:07 (0) ]
+ networking                                                                                                                 [  started  ]
+ seedrng                                                                                                                    [  started  ]
+Runlevel: shutdown
+ killprocs                                                                                                                  [  stopped  ]
+ savecache                                                                                                                  [  stopped  ]
+ mount-ro                                                                                                                   [  stopped  ]
+Dynamic Runlevel: hotplugged
+Dynamic Runlevel: needed/wanted
+ sysfs                                                                                                                      [  started  ]
+ fsck                                                                                                                       [  started  ]
+ root                                                                                                                       [  started  ]
+ localmount                                                                                                                 [  started  ]
+Dynamic Runlevel: manual
+ unbound                                                                                                                    [  started  ]
+prabu@pizero2w ~> doas rc-update -a
+             bootmisc | boot                                   
+              chronyd |      default                           
+                crond |      default                           
+                devfs |                                 sysinit
+                dmesg |                                 sysinit
+             hostname | boot                                   
+            hwdrivers |                                 sysinit
+            killprocs |                        shutdown        
+                 mdev |                                 sysinit
+              modloop |                                 sysinit
+              modules | boot                                   
+             mount-ro |                        shutdown        
+           networking | boot                                   
+            savecache |                        shutdown        
+              seedrng | boot                                   
+                 sshd |      default                           
+              swclock | boot                                   
+               sysctl | boot                                   
+               syslog | boot                                   
+       wpa_supplicant | boot                                   
+
+prabu@pizero2w ~> doas crontab -l
+# do daily/weekly/monthly maintenance
+# min	hour	day	month	weekday	command
+*/15	*	*	*	*	run-parts /etc/periodic/15min
+0	*	*	*	*	run-parts /etc/periodic/hourly
+0	2	*	*	*	run-parts /etc/periodic/daily
+0	3	*	*	6	run-parts /etc/periodic/weekly
+0	5	1	*	*	run-parts /etc/periodic/monthly
+0 	2 	* 	* 	0	/usr/local/bin/stevenblack
+@reboot 				/sbin/rc-service unbound start
+5 * * * * /usr/bin/uptime | /usr/bin/nc -u -w 1 192.168.1.1 514
+
 prabu@pizero2w ~> free -m
               total        used        free      shared  buff/cache   available
 Mem:            449         117         153          69         179         252
